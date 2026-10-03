@@ -4,7 +4,7 @@
 
 Aether is a curated lifestyle storefront for modern everyday living, built with Next.js (App Router), TypeScript, Tailwind CSS v4, Supabase and Resend.
 
-> Status: Stage 0 (foundation) complete. Product functionality is built up stage by stage, one stage at a time.
+> Status: Stages 0–1 complete (foundation, design system and application shell). Product functionality is built up one stage at a time.
 
 ## Product
 
@@ -27,13 +27,21 @@ Editorial + modern + warm minimalism: strong typography, generous whitespace, re
 | Warm Stone | `#D8D2C8` | Borders, dividers, quiet surfaces |
 | Muted Natural Olive | `#66705B` | Accent, used sparingly |
 
-**Typography:** one editorial/display font (wordmark and editorial headings) plus one UI/body font, both loaded through `next/font`. The final pairing is chosen in Stage 1; Stage 0 ships the scaffold's Geist as a temporary baseline. The logo is the typographic wordmark `AETHER` only — no icon, no mascot.
+**Typography:** **DM Serif Display** (editorial display — wordmark, headings) plus **Inter** (UI and body), both loaded through `next/font` as CSS variables and exposed as Tailwind's `font-display` and `font-sans`. The logo is the typographic wordmark `AETHER` only — no icon, no mascot.
 
 ## Navigation
 
-- **Desktop:** `AETHER` on the left; Shop, About, Journal centred; Search, Account and Cart on the right. The cart shows an item count when it has items.
-- **Shop dropdown** (keyboard accessible): All Products, New Arrivals, Fashion, Tech & Accessories, Home & Desk, Self-Care.
-- **Mobile:** the wordmark stays visible, search/account/cart remain reachable where practical, and navigation becomes an intentionally designed drawer.
+All navigation destinations live in `src/lib/navigation.ts`. Only routes that exist are listed, and each stage adds its entries when it implements the route, so the storefront never contains a dead link.
+
+- **Desktop:** `AETHER` on the left; primary navigation centred; Cart in the top-right utility area. The cart shows an item count when it has items (from Stage 4).
+- **Shop dropdown** (hover, click and keyboard, with `aria-expanded`): All Products, New Arrivals, Fashion, Tech & Accessories, Home & Desk, Self-Care. Categories are filtered through query parameters on a single `/shop` route.
+- **Mobile:** the wordmark stays visible, Cart and Menu remain reachable, and navigation becomes a drawer with a focus trap, Escape to close, scroll lock and focus restoration.
+- **Header:** sticky, compacting from 80px to 64px after 8px of scroll, gaining a hairline border. Solid ivory — no glass, blur or floating pill.
+- **Deliberately absent until implemented:** About, Journal, Search and Account. Search only appears once it can search the real catalogue (§56); Account arrives with authentication in Stage 6; About and Journal are not part of the current build.
+
+## Application shell
+
+Routes live in the `(store)` route group (`src/app/(store)/layout.tsx`), which provides the skip link, header, `<main>` landmark and footer. Checkout will live outside that group so it can use its own minimal checkout footer.
 
 ## Homepage structure
 

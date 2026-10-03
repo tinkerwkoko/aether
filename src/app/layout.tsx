@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { DM_Serif_Display, Inter } from "next/font/google";
+import type { ReactNode } from "react";
 import "./globals.css";
 
-// Stage 0 baseline only - the final display + UI font pairing is chosen in Stage 1.
-const geist = Geist({
-  variable: "--font-geist",
+// One editorial display face plus one UI face (Stage 1).
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-dm-serif",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -17,9 +26,12 @@ export const metadata: Metadata = {
     "A considered collection of everyday pieces for how you live, work and move.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${dmSerifDisplay.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
