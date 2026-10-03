@@ -83,6 +83,26 @@
 }
 
 /*
+ * Scroll reveal (see components/ui/reveal.tsx).
+ * No attribute means visible, so the content survives without JavaScript.
+ */
+[data-reveal] {
+  transition:
+    opacity 700ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+[data-reveal="revealed"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/*
  * Accessibility foundation: motion is never required to understand or operate Aether.
  */
 @media (prefers-reduced-motion: reduce) {

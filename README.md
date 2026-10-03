@@ -4,7 +4,7 @@
 
 Aether is a curated lifestyle storefront for modern everyday living, built with Next.js (App Router), TypeScript, Tailwind CSS v4, Supabase and Resend.
 
-> Status: Stages 0–1 complete (foundation, design system and application shell). Product functionality is built up one stage at a time.
+> Status: Stages 0–2 complete (foundation, design system and application shell, homepage). Product functionality is built up one stage at a time.
 
 ## Product
 
@@ -45,13 +45,17 @@ Routes live in the `(store)` route group (`src/app/(store)/layout.tsx`), which p
 
 ## Homepage structure
 
-Header → Hero ("Things worth having.") → New Arrivals ("Recently selected.") → Shop by Category → Brand Statement ("Less noise. Better things.") → Curated Products → Newsletter (only if it genuinely stores or sends subscriptions) → Footer.
+Header → Hero ("Things worth having." + "Shop New Arrivals") → New Arrivals ("Recently selected.", four products) → Shop by category (four image-led blocks) → Brand Statement ("Less noise. Better things.") → Curated products (a second, different row) → Footer.
+
+The newsletter section is omitted because it is not functional yet. Section sources live in `src/components/home/`; the page itself is `src/app/(store)/page.tsx`.
 
 ## Catalogue
 
-Roughly 12–16 products across the four categories. Core product fields: `id`, `name`, `slug`, `description`, `price`, `category`, `image`, `stock`, `created_at`, plus optional detail fields (materials, dimensions, colours, sizes) only where they are real.
+14 seed products across the four categories, defined in `src/lib/catalogue.ts` (slug, name, category, price in naira, stock). This file is temporary seed data and is replaced by Supabase in Stage 5. Product fields also carry `id`, `description`, `image` and `created_at` once the database exists.
 
-Image sources are centralized so real photography can replace development placeholders without rewriting the product system. Placeholders are always identified as placeholders — never presented as real product photography.
+Prices are formatted in exactly one place, `src/lib/format.ts`, as Nigerian naira (`₦`).
+
+Image sources are centralised in `src/lib/images.ts`. No photography exists yet, so `EditorialImage` renders a warm-stone placeholder panel labelled with what belongs there; adding a path in `src/lib/images.ts` for files placed in `public/images/...` switches to real photography without touching any component.
 
 ## Customer journey
 

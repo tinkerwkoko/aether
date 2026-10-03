@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,6 +13,35 @@ import { primaryNav } from "@/lib/navigation";
 const navLinkClass =
   "text-[0.72rem] uppercase tracking-[0.22em] text-charcoal/75 transition-colors duration-200 hover:text-charcoal";
 
+/** Shared 44px tap target, with the 24px icon centred inside it. */
+const iconButtonClass =
+  "inline-flex h-11 w-11 items-center justify-center text-charcoal/75 transition-colors duration-200 hover:text-charcoal";
+
+/** Shared icon geometry: 22px glyph, thin 1.5 stroke, decorative. */
+const iconSize = { size: 22, strokeWidth: 1.5 } as const;
+
+/**
+ * Cart link. The count badge only appears when there is something in the cart.
+ * The count is a static 0 until cart state lands in Stage 4.
+ */
+function CartLink({ count }: { count: number }) {
+  const label =
+    count > 0 ? `Cart, ${count} ${count === 1 ? "item" : "items"}` : "Cart";
+
+  return (
+    <Link href="/cart" aria-label={label} className={iconButtonClass}>
+      <span className="relative inline-flex">
+        <ShoppingCart {...iconSize} aria-hidden />
+        {count > 0 ? (
+          <span className="absolute -top-1 -right-1.5 min-w-4.5 rounded-full bg-charcoal px-1 text-center text-[10px] leading-4.5 text-ivory">
+            {count > 9 ? "9+" : count}
+          </span>
+        ) : null}
+      </span>
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -19,6 +49,9 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [renderedPathname, setRenderedPathname] = useState(pathname);
+
+  // Static until cart state is implemented in Stage 4.
+  const cartCount = 0;
 
   // Stable identity so the drawer effect only re-runs when it opens or closes.
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -46,7 +79,7 @@ export function SiteHeader() {
     >
       <Container>
         <div
-          className={`grid grid-cols-[1fr_auto_1fr] items-center transition-[height] duration-300 ${
+          className={`flex items-center justify-between transition-[height] duration-300 ${
             scrolled ? "h-14 sm:h-16" : "h-16 sm:h-20"
           }`}
         >
@@ -58,7 +91,10 @@ export function SiteHeader() {
             Aether
           </Link>
 
-          <nav aria-label="Primary" className="hidden lg:block">
+          <nav
+            aria-label="Primary"
+            className="hidden flex-1 justify-center lg:flex"
+          >
             <ul className="flex items-center gap-10">
               {primaryNav.map((item) => (
                 <li
@@ -94,22 +130,14 @@ export function SiteHeader() {
                           if (event.key === "Escape") setShopOpen(false);
                         }}
                       >
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 10 6"
-                          className={`h-[5px] w-[9px] transition-transform duration-200 ${
+                        <ChevronDown
+                          size={14}
+                          strokeWidth={1.5}
+                          aria-hidden
+                          className={`transition-transform duration-200 ${
                             shopOpen ? "rotate-180" : ""
                           }`}
-                        >
-                          <path
-                            d="M1 1l4 4 4-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        />
                       </button>
                     ) : null}
                   </span>
@@ -139,19 +167,22 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="flex items-center justify-end gap-6">
-            <Link href="/cart" className={navLinkClass}>
-              Cart
-            </Link>
+          <div className="flex items-center gap-1.5">
+            <CartLink count={cartCount} />
             <button
               ref={menuButtonRef}
               type="button"
-              className={`${navLinkClass} lg:hidden`}
+              className={`${iconButtonClass} lg:hidden`}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
               onClick={() => setMenuOpen((open) => !open)}
             >
-              Menu
+              {menuOpen ? (
+                <X {...iconSize} aria-hidden />
+              ) : (
+                <Menu {...iconSize} aria-hidden />
+              )}
             </button>
           </div>
         </div>

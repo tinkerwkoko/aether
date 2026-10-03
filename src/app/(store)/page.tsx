@@ -1,27 +1,21 @@
-import { Container } from "@/components/layout/container";
+import { BrandStatement } from "@/components/home/brand-statement";
+import { CuratedProducts } from "@/components/home/curated-products";
+import { Hero } from "@/components/home/hero";
+import { NewArrivals } from "@/components/home/new-arrivals";
+import { ShopByCategory } from "@/components/home/shop-by-category";
 
 /**
- * Stage 1 design-system placeholder.
- * Intentionally not the Aether homepage - the homepage is built in Stage 2.
+ * Aether homepage.
+ * Newsletter is intentionally absent: it is not functional yet (Stage 2 scope).
  */
 export default function Home() {
   return (
-    <Container className="py-20 sm:py-28">
-      <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted">
-        Aether design system
-      </p>
-
-      <h1 className="mt-8 max-w-3xl font-display text-5xl leading-[1.05] sm:text-7xl">
-        Things worth having.
-      </h1>
-
-      <p className="mt-6 max-w-xl text-muted">
-        A considered collection of everyday pieces for how you live, work and move.
-      </p>
-
-      <p className="mt-16 border-t border-line pt-6 text-xs text-muted">
-        Placeholder: the homepage is built in Stage 2.
-      </p>
-    </Container>
+    <>
+      <Hero />
+      <NewArrivals />
+      <ShopByCategory />
+      <BrandStatement />
+      <CuratedProducts />
+    </>
   );
 }

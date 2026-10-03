@@ -88,4 +88,17 @@ Relevant manual checks: ...
 ...
 ### Blockers
 None
-```
+````
+## Terminal rule
+
+Do not run tsc, lint, build, dev servers or other long-running commands. After finishing code changes, tell me to run `npm run check` and wait for my result. Short commands (git status, listing files, installing a named package) are fine. Never kill Node processes. Never edit package.json scripts unless the current instruction says to.
+````
+
+Two small changes: the `## Terminal rule` heading makes the rule easy to find, and there's a blank line separating it from the template above.
+## Tailwind rules
+- This project uses Tailwind CSS v4. Prefer canonical utility classes over arbitrary values: use `z-70`, not `z-[70]`; `min-w-4.5`, not `min-w-[18px]`; `h-1.25`, not `h-[5px]`. One spacing unit equals 4px, so divide pixel values by 4.
+- Use arbitrary values in square brackets only when no canonical class exists (for example, a one-off brand colour or a specific grid template).
+- Before finishing any task, make sure the editor Problems panel shows no Tailwind suggestCanonicalClasses warnings in files you changed.
+- Use the colour and font tokens defined in globals.css; do not hard-code hex values in components.
+
+Also check that the report template above `### Important implementation decisions` is complete. It should have the sections from the master prompt (What was implemented, Files created/changed, Verification, UX / Design notes). Since you're running the checks, tell Cline to write "checks run by user" in the Verification section instead of PASS/FAIL, so it doesn't claim results it never saw.

@@ -1,5 +1,6 @@
 "use client";
 
+import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
@@ -15,7 +16,7 @@ type MobileNavProps = {
 /**
  * Mobile navigation drawer.
  * Stays mounted so it can animate both ways, but is removed from the tab order
- * and the accessibility tree while closed (inert + aria-hidden).
+ * and the accessibility tree while closed (visibility: hidden + aria-hidden).
  */
 export function MobileNav({ open, onClose, triggerRef }: MobileNavProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -70,9 +71,8 @@ export function MobileNav({ open, onClose, triggerRef }: MobileNavProps) {
   return (
     <div
       id="mobile-menu"
-      inert={!open}
       aria-hidden={!open}
-      className={`fixed inset-0 z-[70] lg:hidden ${
+      className={`fixed inset-0 z-70 lg:hidden ${
         open ? "visible" : "invisible pointer-events-none"
       }`}
     >
@@ -127,8 +127,9 @@ export function MobileNav({ open, onClose, triggerRef }: MobileNavProps) {
           <Link
             href="/cart"
             onClick={onClose}
-            className="text-[0.72rem] uppercase tracking-[0.22em] text-charcoal"
+            className="inline-flex h-11 items-center gap-2 text-[0.72rem] uppercase tracking-[0.22em] text-charcoal"
           >
+            <ShoppingCart size={22} strokeWidth={1.5} aria-hidden />
             Cart
           </Link>
         </div>
