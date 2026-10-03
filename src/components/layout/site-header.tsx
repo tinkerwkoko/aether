@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDown, Menu, ShoppingCart, X } from "lucide-react";
+import {
+  ChevronDown,
+  Menu,
+  Search,
+  ShoppingCart,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -168,6 +174,9 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-1.5">
+            <Link href="/shop#search" aria-label="Search" className={iconButtonClass}>
+              <Search {...iconSize} aria-hidden />
+            </Link>
             <CartLink count={cartCount} />
             <button
               ref={menuButtonRef}

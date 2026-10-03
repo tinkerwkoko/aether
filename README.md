@@ -4,7 +4,7 @@
 
 Aether is a curated lifestyle storefront for modern everyday living, built with Next.js (App Router), TypeScript, Tailwind CSS v4, Supabase and Resend.
 
-> Status: Stages 0–2 complete (foundation, design system and application shell, homepage). Product functionality is built up one stage at a time.
+> Status: Stages 0–3 complete (foundation, application shell, homepage, catalogue and product pages). Product functionality is built up one stage at a time.
 
 ## Product
 
@@ -56,6 +56,15 @@ The newsletter section is omitted because it is not functional yet. Section sour
 Prices are formatted in exactly one place, `src/lib/format.ts`, as Nigerian naira (`₦`).
 
 Image sources are centralised in `src/lib/images.ts`. No photography exists yet, so `EditorialImage` renders a warm-stone placeholder panel labelled with what belongs there; adding a path in `src/lib/images.ts` for files placed in `public/images/...` switches to real photography without touching any component.
+
+## Shop and product pages
+
+- **Shop** (`/shop`) is a server component that reads `searchParams`. Category filter and sort are real links; search is a real GET form targeting `?q=`, so everything works without JavaScript. Query parsing, filtering and sorting live in `src/lib/shop-query.ts`; controls and grid live in `src/components/shop/`.
+- **Query parameters:** `?category=<slug>`, `?q=<text>`, `?sort=newest|price-asc|price-desc`. New Arrivals is simply the shop sorted by newest (`/shop?sort=newest`), which is what the header dropdown, mobile drawer and footer all link to.
+- **Product** (`/products/[slug]`) has a breadcrumb, gallery placeholder, category/name/price/description, a size selector for clothing only, and Details / Materials / Dimensions **only where that product has the data**. Shipping and Returns are intentionally absent because no shipping or returns data exists yet.
+- Product pages are prerendered via `generateStaticParams` and have per-product metadata with a canonical URL. Unknown slugs render a designed 404.
+- `/shop` also has `loading.tsx` (skeleton grid, pulses disabled under reduced motion) and `error.tsx` (plain-language message with a retry action).
+- The shared card is `src/components/shop/product-card.tsx`, used by both the homepage and the shop. Its image links to the product but is `aria-hidden` and `tabIndex={-1}`, so the card is one tab stop ("View product"). Space is reserved for the hover action overlay that arrives in Stages 4 and 6.
 
 ## Customer journey
 

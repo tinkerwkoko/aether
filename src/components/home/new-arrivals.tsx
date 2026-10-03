@@ -1,5 +1,5 @@
 import { Container } from "@/components/layout/container";
-import { ProductCard } from "@/components/home/product-card";
+import { ProductCard } from "@/components/shop/product-card";
 import { Reveal } from "@/components/ui/reveal";
 import { newArrivals } from "@/lib/catalogue";
 

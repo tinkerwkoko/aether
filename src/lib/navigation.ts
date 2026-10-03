@@ -12,7 +12,7 @@ export type NavLink = { label: string; href: string };
  */
 export const shopLinks: NavLink[] = [
   { label: "All Products", href: "/shop" },
-  { label: "New Arrivals", href: "/shop?sort=new" },
+  { label: "New Arrivals", href: "/shop?sort=newest" },
   { label: "Fashion", href: "/shop?category=fashion" },
   { label: "Tech & Accessories", href: "/shop?category=tech-accessories" },
   { label: "Home & Desk", href: "/shop?category=home-desk" },
