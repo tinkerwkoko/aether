@@ -1,8 +1,11 @@
 import { CartProvider } from "@/components/cart/cart-provider";
+import { CompletePendingSave } from "@/components/saved/complete-pending-save";
+import { SavedProvider } from "@/components/saved/saved-provider";
 import { getCartCatalogue } from "@/lib/data/products";
 import type { Metadata } from "next";
 import { DM_Serif_Display, Inter } from "next/font/google";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import "./globals.css";
 
 // One editorial display face plus one UI face (Stage 1).
@@ -38,7 +41,15 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       className={`${inter.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <CartProvider products={cartCatalogue}>{children}</CartProvider>
+        <CartProvider products={cartCatalogue}>
+          {/* Client-only auth plumbing. No cookie is read on the server here,
+              so product pages stay static. */}
+          <SavedProvider />
+          <Suspense fallback={null}>
+            <CompletePendingSave />
+          </Suspense>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

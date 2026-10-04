@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { CardAddToCart } from "@/components/shop/card-add-to-cart";
+import { SaveButton } from "@/components/saved/save-button";
 import { EditorialImage } from "@/components/ui/editorial-image";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/types";
@@ -35,7 +36,7 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
           </div>
         </Link>
 
-        {/* Save action will sit here in Stage 6. */}
+        {/* Save action sits here from Stage 6, beside Add to cart. */}
         <div className="absolute top-3 right-3 flex items-center gap-2">
           <div className="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:transition-opacity [@media(hover:hover)]:duration-200 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
             <CardAddToCart
@@ -43,6 +44,14 @@ export function ProductCard({ product, sizes }: { product: Product; sizes?: stri
               productName={product.name}
               hasSizes={Boolean(product.sizes)}
               soldOut={product.stock < 1}
+            />
+          </div>
+
+          <div className="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:transition-opacity [@media(hover:hover)]:duration-200 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
+            <SaveButton
+              productId={product.id}
+              productName={product.name}
+              productSlug={product.slug}
             />
           </div>
         </div>

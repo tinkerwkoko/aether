@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountLink } from "@/components/auth/account-link";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -124,14 +125,18 @@ export function MobileNav({ open, onClose, triggerRef }: MobileNavProps) {
         </nav>
 
         <div className="border-t border-line px-6 py-6">
-          <Link
-            href="/cart"
-            onClick={onClose}
-            className="inline-flex h-11 items-center gap-2 text-[0.72rem] uppercase tracking-[0.22em] text-charcoal"
-          >
-            <ShoppingCart size={22} strokeWidth={1.5} aria-hidden />
-            Cart
-          </Link>
+          <div className="flex items-center gap-6">
+            <AccountLink />
+
+            <Link
+              href="/cart"
+              onClick={onClose}
+              className="inline-flex h-11 items-center gap-2 text-[0.72rem] uppercase tracking-[0.22em] text-charcoal"
+            >
+              <ShoppingCart size={22} strokeWidth={1.5} aria-hidden />
+              Cart
+            </Link>
+          </div>
         </div>
       </div>
     </div>

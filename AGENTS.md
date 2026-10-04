@@ -100,6 +100,15 @@ Two small changes: the `## Terminal rule` heading makes the rule easy to find, a
 - Use arbitrary values in square brackets only when no canonical class exists (for example, a one-off brand colour or a specific grid template).
 - Before finishing any task, make sure the editor Problems panel shows no Tailwind suggestCanonicalClasses warnings in files you changed.
 - Use the colour and font tokens defined in globals.css; do not hard-code hex values in components.
+## Auth
+- Supabase Auth with Google only. Aether never handles or stores passwords, and no Google client secret is ever in this app.
+- `src/proxy.ts` (Next 16's replacement for middleware.ts) refreshes the Supabase session cookies on every request. It does no database work.
+- On the server, verify with `getUser()`. `getSession()` is never trusted for authorisation.
+- Protected pages call `requireUser(nextPath)` from `src/lib/auth.ts`, which redirects to `/login?next=...`. A user id from the browser is never trusted.
+- The `next` redirect must be validated: a single leading `/`, never `//` or `/\`. Anything else falls back to `/account`.
+- The root layout and product pages must not read cookies, or every static page becomes dynamic. Only `/login`, `/auth/*`, `/account` and `/account/*` read cookies on the server.
+- The service-role key is never used for user-scoped reads or writes. Those go through the user's own session so RLS stays the authorisation boundary.
+
 ## Cart
 ## Supabase
 - Public catalogue reads use the cookie-less client (`src/lib/supabase/public.ts`): no session is persisted, so shop and product pages stay statically renderable.

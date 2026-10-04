@@ -4,7 +4,7 @@
 
 Aether is a curated lifestyle storefront for modern everyday living, built with Next.js (App Router), TypeScript, Tailwind CSS v4, Supabase and Resend.
 
-> Status: Stages 0–5 complete (foundation, application shell, homepage, catalogue, cart, Supabase).
+> Status: Stages 0–6 complete (foundation, application shell, homepage, catalogue, cart, Supabase, authentication and account).
 
 ## Product
 
@@ -104,6 +104,20 @@ Cart totals in the UI are presentation only. The server recalculates every total
 ## Product card actions
 
 Each product card carries icon actions over the image: **Add to cart** (lucide `ShoppingCart`, 44px, accessible name includes the product name) and **Save** (lucide `Bookmark`), plus the "View product" text link beside the price. On devices with hover they fade in on card hover and on keyboard focus within the card; on devices without hover they are always visible, so hover is never the only route. Add to cart works for guests. Save requires an account: a signed-out Save opens an accessible dialog offering "Continue with Google" or "Not now", and saved items live in a real `saved_items` Supabase table (unique on `user_id` + `product_id`, RLS restricted to the owner). Both are built in the stages where they can actually work.
+
+## Authentication
+
+Sign-in is **Google only**, through Supabase Auth. Aether never handles or stores passwords, and no Google secret is ever present in this app — the OAuth client lives in the Supabase dashboard.
+
+- `src/proxy.ts` (Next 16's replacement for `middleware.ts`) refreshes the Supabase session cookies on every request and does no database work.
+- The server verifies with `getUser()`. `getSession()` is never trusted for authorisation.
+- Protected pages call `requireUser(nextPath)` from `src/lib/auth.ts`, which redirects to `/login?next=...` when signed out. Every `next` value is validated as a same-site relative path: it must start with a single `/`, never `//` or `/\`.
+- **Static pages stay static.** The root layout and product pages never read cookies; only `/login`, `/auth/*`, `/account` and `/account/*` do. Header and Save state come from small client components using the browser client, wired through `useSyncExternalStore` with a neutral "loading" snapshot, so there is no layout shift and no `setState` inside an effect.
+- The service-role key is never used for user-scoped reads or writes — those go through the user's own session, so RLS remains the authorisation boundary.
+
+## Saved pieces
+
+Save (lucide `Bookmark`, 44px target) sits beside Add to cart on every product card and on the product page, with the same hover and touch visibility rules. Saved rows live in `saved_items` (unique per user and product, RLS restricted to the owner). Toggling goes through a server action that verifies the user and validates the product id server-side. A signed-out visitor gets an accessible dialog offering "Continue with Google" or "Not now"; after sign-in a small client component inside `Suspense` completes the pending save from `?save=<id>` and tidies the URL. A saved state is never faked.
 
 ## Security summary
 

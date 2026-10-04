@@ -3,25 +3,34 @@
  *
  * Used from Stage 6 for sign-in and session state. Never import this from a
  * server component: use the server or public client instead.
+ *
+ * The variables are read as literal property accesses on purpose. Next.js only
+ * inlines `NEXT_PUBLIC_*` values into the browser bundle when they appear
+ * verbatim, so a dynamic `process.env[name]` lookup would be undefined here.
+ * Each is checked separately and the error names only the variable, never its
+ * value.
  */
 
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
+export function createSupabaseBrowserClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  if (!value) {
-    throw new Error(`Missing environment variable: ${name}.`);
+  if (!url) {
+    throw new Error(
+      "Missing environment variable: NEXT_PUBLIC_SUPABASE_URL. Copy .env.example to .env.local and fill it in.",
+    );
   }
 
-  return value;
-}
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export function createSupabaseBrowserClient() {
-  return createBrowserClient(
-    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-  );
+  if (!key) {
+    throw new Error(
+      "Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY. Copy .env.example to .env.local and fill it in.",
+    );
+  }
+
+  return createBrowserClient(url, key);
 }

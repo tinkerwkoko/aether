@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
+import { SaveButton } from "@/components/saved/save-button";
 import { ProductPurchase } from "@/components/shop/product-purchase";
 import { EditorialImage } from "@/components/ui/editorial-image";
 import { getProductBySlug, getProductSlugs } from "@/lib/data/products";
@@ -104,13 +105,19 @@ export default async function ProductPage({
           <p className="mt-6 max-w-md text-muted">{product.description}</p>
 
           <ProductPurchase
-            productId={product.slug}
+            productId={product.id}
             productName={product.name}
             stock={product.stock}
             sizes={product.sizes}
           />
 
-          {/* Quantity and Add to Cart arrive with cart state in Stage 4. */}
+          <div className="mt-6">
+            <SaveButton
+              productId={product.id}
+              productName={product.name}
+              productSlug={product.slug}
+            />
+          </div>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { AccountLink } from "@/components/auth/account-link";
 import { Container } from "@/components/layout/container";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { primaryNav } from "@/lib/navigation";
@@ -176,6 +177,7 @@ export function SiteHeader() {
             <Link href="/shop#search" aria-label="Search" className={iconButtonClass}>
               <Search {...iconSize} aria-hidden />
             </Link>
+            <AccountLink />
             <CartLink />
             <button
               ref={menuButtonRef}
