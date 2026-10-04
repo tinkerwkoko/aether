@@ -10,7 +10,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -24,12 +24,26 @@ export const getCurrentUser = cache(async () => {
     const { data, error } = await supabase.auth.getUser();
 
     if (error) {
-      console.error("[aether] session verification failed:", error.message);
+      // "Auth session missing!" is simply the signed-out state, which every
+      // anonymous visitor hits on every request. Logging it would bury real
+      // failures in noise, so it returns quietly.
+      const isSignedOut =
+        error.name === "AuthSessionMissingError" ||
+        error.message === "Auth session missing!";
+
+      if (!isSignedOut) {
+        console.error("[aether] session verification failed:", error.message);
+      }
+
       return null;
     }
 
     return data.user;
   } catch (error) {
+    // Next.js signals "this page uses dynamic data" by throwing from cookies().
+    // That is control flow, not a failure, so it must be rethrown rather than
+    // logged and swallowed.
+    unstable_rethrow(error);
     console.error("[aether] session verification failed:", error);
     return null;
   }

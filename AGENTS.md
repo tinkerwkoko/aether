@@ -100,6 +100,13 @@ Two small changes: the `## Terminal rule` heading makes the rule easy to find, a
 - Use arbitrary values in square brackets only when no canonical class exists (for example, a one-off brand colour or a specific grid template).
 - Before finishing any task, make sure the editor Problems panel shows no Tailwind suggestCanonicalClasses warnings in files you changed.
 - Use the colour and font tokens defined in globals.css; do not hard-code hex values in components.
+## Orders
+- Orders are created only by the `create_order` function in Supabase, and only through the `placeOrder` server action. Nothing else writes orders or order items.
+- Totals and prices come from the database. `products.price` is read server-side and snapshotted into `order_items.price`. A total or price from the browser is never trusted.
+- The idempotency key stops duplicates: it is generated once per checkout attempt, kept in sessionStorage, reused on retries, and enforced by a unique constraint on `orders (user_id, idempotency_key)`.
+- The admin (service-role) client is server-only, guarded by `import "server-only"`, and used for nothing except calling `create_order`. Order reads use the normal server client so RLS enforces ownership.
+- Email arrives in Stage 8. Email must never decide whether an order succeeds, and the confirmation page must not claim an email was sent until that stage proves it.
+
 ## Auth
 - Supabase Auth with Google only. Aether never handles or stores passwords, and no Google client secret is ever in this app.
 - `src/proxy.ts` (Next 16's replacement for middleware.ts) refreshes the Supabase session cookies on every request. It does no database work.

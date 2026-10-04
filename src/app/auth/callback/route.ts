@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -41,6 +42,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=1`);
     }
   } catch (error) {
+    // Next.js throws from cookies() to signal dynamic rendering. That is control
+    // flow, not a failed exchange, so it is rethrown rather than redirected on.
+    unstable_rethrow(error);
+
     console.error("[aether] oauth exchange failed:", error);
     return NextResponse.redirect(`${origin}/login?error=1`);
   }

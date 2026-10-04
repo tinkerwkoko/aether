@@ -7,6 +7,8 @@
 
 import "server-only";
 
+import { unstable_rethrow } from "next/navigation";
+
 import { getCurrentUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getProductsByIds } from "@/lib/data/products";
@@ -33,6 +35,9 @@ export async function getSavedProductIds(): Promise<string[]> {
       .map((row) => (row as { product_id?: unknown }).product_id)
       .filter((id): id is string => typeof id === "string");
   } catch (error) {
+    // Next.js throws from cookies() to signal dynamic rendering: rethrow first.
+    unstable_rethrow(error);
+
     if (error instanceof Error && error.message.startsWith("We couldn't")) {
       throw error;
     }

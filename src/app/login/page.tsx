@@ -41,11 +41,11 @@ export default async function LoginPage({
     <div className="flex min-h-dvh flex-col bg-ivory">
       <Container className="flex flex-1 flex-col justify-center py-20">
         <div className="mx-auto w-full max-w-sm">
-          <p className="font-display text-base uppercase tracking-[0.3em]">
+          <p className="font-display text-base uppercase tracking-[0.3em] text-charcoal sm:text-lg">
             Aether
           </p>
 
-          <h1 className="mt-10 font-display text-3xl sm:text-4xl">
+          <h1 className="mt-10 font-display text-3xl leading-tight text-charcoal sm:text-4xl">
             Sign in to Aether
           </h1>
 

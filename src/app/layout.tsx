@@ -40,7 +40,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       lang="en"
       className={`${inter.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      {/* Grammarly and similar extensions inject attributes onto <body>, which
+          React would otherwise report as a hydration mismatch. */}
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <CartProvider products={cartCatalogue}>
           {/* Client-only auth plumbing. No cookie is read on the server here,
               so product pages stay static. */}

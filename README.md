@@ -119,6 +119,18 @@ Sign-in is **Google only**, through Supabase Auth. Aether never handles or store
 
 Save (lucide `Bookmark`, 44px target) sits beside Add to cart on every product card and on the product page, with the same hover and touch visibility rules. Saved rows live in `saved_items` (unique per user and product, RLS restricted to the owner). Toggling goes through a server action that verifies the user and validates the product id server-side. A signed-out visitor gets an accessible dialog offering "Continue with Google" or "Not now"; after sign-in a small client component inside `Suspense` completes the pending save from `?save=<id>` and tidies the URL. A saved state is never faked.
 
+## Checkout and orders
+
+Checkout lives in its own `(checkout)` route group with a minimal shell: the AETHER wordmark, a "Secure checkout" label and the minimal footer. No marketing header, footer or Save icons.
+
+`/checkout` is protected with `requireUser("/checkout")`, so a signed-out customer is sent to Google sign-in and returned there. It is one page with two stages — delivery, then review — with a Delivery / Review / Place order indicator. Delivery details are validated by `src/lib/checkout-schema.ts`, a zod schema shared by the client form and the server action, so the customer sees exactly the rules the server enforces. Nigerian phone numbers are normalised to `+234…`.
+
+**Orders are never priced by the browser.** The browser sends product ids, quantities, sizes and delivery details. `placeOrder` in `src/lib/order-actions.ts` re-verifies the user, re-validates the input, recomputes the total from `products.price`, and then makes a single call to the `create_order` database function, which writes the order, its items and the stock decrement in one transaction. A total that has moved since the page loaded returns `PRICE_CHANGED` and creates nothing, so the customer re-confirms.
+
+Duplicate protection uses an idempotency key generated once per checkout attempt, kept in `sessionStorage` and reused on retries and double-clicks, enforced by a unique constraint on `orders (user_id, idempotency_key)`. The Place order button disables immediately and carries `aria-busy`.
+
+The service-role client (`src/lib/supabase/admin.ts`) is guarded by `import "server-only"` and used for nothing except calling `create_order`. Order *reads* use the normal server client so RLS enforces ownership. No payment fields are collected, and no delivery time is promised anywhere.
+
 ## Security summary
 
 - RLS is enabled on private tables. Users can read and update only their own profile, and can read only their own orders and order items.

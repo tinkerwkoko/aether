@@ -89,7 +89,12 @@ export async function toggleSaved(
 
   const { error: insertError } = await supabase
     .from('saved_items')
-    .insert({ product_id: productId });
+    .insert({
+      // user_id comes from the server-verified session, never from the client.
+      // saved_items.user_id has no default, so it must be supplied explicitly.
+      user_id: user.id,
+      product_id: productId,
+    });
 
   if (insertError) {
     // A duplicate means it was saved concurrently, which is still "saved".
