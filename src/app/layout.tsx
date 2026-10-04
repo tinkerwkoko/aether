@@ -1,3 +1,5 @@
+import { CartProvider } from "@/components/cart/cart-provider";
+import { getCartCatalogue } from "@/lib/data/products";
 import type { Metadata } from "next";
 import { DM_Serif_Display, Inter } from "next/font/google";
 import type { ReactNode } from "react";
@@ -26,13 +28,18 @@ export const metadata: Metadata = {
     "A considered collection of everyday pieces for how you live, work and move.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Fetched once, on the server, and handed to the cart. No browser-side fetching.
+  const cartCatalogue = await getCartCatalogue();
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <CartProvider products={cartCatalogue}>{children}</CartProvider>
+      </body>
     </html>
   );
 }

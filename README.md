@@ -4,7 +4,7 @@
 
 Aether is a curated lifestyle storefront for modern everyday living, built with Next.js (App Router), TypeScript, Tailwind CSS v4, Supabase and Resend.
 
-> Status: Stages 0–3 complete (foundation, application shell, homepage, catalogue and product pages). Product functionality is built up one stage at a time.
+> Status: Stages 0–5 complete (foundation, application shell, homepage, catalogue, cart, Supabase).
 
 ## Product
 
@@ -51,11 +51,13 @@ The newsletter section is omitted because it is not functional yet. Section sour
 
 ## Catalogue
 
-14 seed products across the four categories, defined in `src/lib/catalogue.ts` (slug, name, category, price in naira, stock). This file is temporary seed data and is replaced by Supabase in Stage 5. Product fields also carry `id`, `description`, `image` and `created_at` once the database exists.
+The catalogue is a real Supabase table seeded by `supabase/seed.sql` (14 products across the four categories, upserted on slug so the seed is re-runnable). Products carry `id`, `slug`, `name`, `description`, `short_description`, `price` (whole naira), `stock`, `category_id`, `image_url`, `is_featured`, optional `sizes` / `details` / `material` / `dimensions`, and `created_at`.
+
+Reads go through `src/lib/data/products.ts`, which is the only module that talks to the database. It selects just the columns the UI needs, joins the category in the same query, validates every row, and caches results for 60 seconds. Pages never see a raw row or a raw database error: technical failures are logged server-side and surfaced as plain language for `error.tsx`.
 
 Prices are formatted in exactly one place, `src/lib/format.ts`, as Nigerian naira (`₦`).
 
-Image sources are centralised in `src/lib/images.ts`. No photography exists yet, so `EditorialImage` renders a warm-stone placeholder panel labelled with what belongs there; adding a path in `src/lib/images.ts` for files placed in `public/images/...` switches to real photography without touching any component.
+`image_url` stores a path under `public/images` or is null. `src/lib/images.ts` is the one place an image is resolved: a null value falls back to the labelled placeholder, so a missing photo is never shown as if it were real.
 
 ## Shop and product pages
 
@@ -70,6 +72,15 @@ Image sources are centralised in `src/lib/images.ts`. No photography exists yet,
 
 Homepage → Shop → Category → Product → Add to Cart → Cart → Checkout → Google authentication → Delivery information → Order review → Place order → server validates the order → Supabase creates the order → Resend sends the confirmation email → Order confirmation → Order history.
 
+## Supabase
+- Public reads (shop, product pages, homepage) use the cookie-less client in `src/lib/supabase/public.ts`. It never persists a session, which is what keeps those pages statically renderable.
+- Private data uses `src/lib/supabase/server.ts` (cookies from `next/headers`) or `src/lib/supabase/client.ts` in client components.
+- The service-role key is server-only, is never prefixed `NEXT_PUBLIC_`, and is not used by any client. Stage 7 adds the service-role client with `import "server-only"`.
+- RLS stays enabled on every table and is never disabled, in any environment. Clients may never write orders, order items, products or categories.
+- Money is stored as integer naira. `order_items.price` is a purchase-time snapshot, so an order total never shifts when the catalogue changes.
+- Row-level policies use `(select auth.uid())` and are written to hide other users' orders and order items.
+- Database failures are logged on the server and surfaced to pages as plain-language errors; raw PostgREST errors never reach a page.
+
 ## Database
 
 | Table | Purpose | Key columns |
@@ -81,6 +92,18 @@ Homepage → Shop → Category → Product → Add to Cart → Cart → Checkout
 | `order_items` | Order line items | `id`, `order_id`, `product_id`, `quantity`, `price` (historical snapshot) |
 
 Relationships: category → products, user → orders, order → order items, product → order items. The order-item price is a snapshot of the purchase-time price.
+
+## Cart
+
+State lives in one `CartProvider` (React context) around the root layout, backed by a `localStorage` store read through `useSyncExternalStore` with an empty server snapshot, so there is no hydration mismatch and no setState inside an effect. No state library.
+
+A cart line stores only `productId`, `quantity` and `size` (clothing only). Names, images and prices are always read from the catalogue at render time, so the display is current rather than stale, and storage that is corrupt or references a product that no longer exists is dropped rather than repaired. Quantity is a whole number from 1 up to the product's stock.
+
+Cart totals in the UI are presentation only. The server recalculates every total authoritatively in Stage 7 and never trusts a browser-supplied price.
+
+## Product card actions
+
+Each product card carries icon actions over the image: **Add to cart** (lucide `ShoppingCart`, 44px, accessible name includes the product name) and **Save** (lucide `Bookmark`), plus the "View product" text link beside the price. On devices with hover they fade in on card hover and on keyboard focus within the card; on devices without hover they are always visible, so hover is never the only route. Add to cart works for guests. Save requires an account: a signed-out Save opens an accessible dialog offering "Continue with Google" or "Not now", and saved items live in a real `saved_items` Supabase table (unique on `user_id` + `product_id`, RLS restricted to the owner). Both are built in the stages where they can actually work.
 
 ## Security summary
 

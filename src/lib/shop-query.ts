@@ -1,16 +1,22 @@
-import { CATEGORIES, CATALOGUE, CATEGORY_NAMES } from "@/lib/catalogue";
-import type { Product } from "@/lib/catalogue";
+/**
+ * Shop URL parsing and link building.
+ *
+ * Only the query-string shape lives here. The filtering and sorting itself is
+ * done by the database in src/lib/data/products.ts, so results are always real
+ * rows rather than a filtered copy of a static list.
+ */
 
-export const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "price-asc", label: "Price low to high" },
-  { value: "price-desc", label: "Price high to low" },
-] as const;
+import { isCategorySlug } from "@/lib/types";
+import type { CategorySlug, SortValue } from "@/lib/types";
 
-export type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+export const SORT_VALUES: readonly SortValue[] = [
+  "newest",
+  "price-asc",
+  "price-desc",
+];
 
 export type ShopQuery = {
-  category: string;
+  category: CategorySlug | "";
   q: string;
   sort: SortValue;
 };
@@ -24,11 +30,12 @@ export function parseShopQuery(
   params: Record<string, string | string[] | undefined>,
 ): ShopQuery {
   const sort = first(params.sort);
+  const category = first(params.category);
 
   return {
-    category: first(params.category),
+    category: isCategorySlug(category) ? category : "",
     q: first(params.q).trim(),
-    sort: SORT_OPTIONS.some((option) => option.value === sort)
+    sort: SORT_VALUES.includes(sort as SortValue)
       ? (sort as SortValue)
       : "newest",
   };
@@ -48,40 +55,6 @@ export function shopHref(
 
   const query = search.toString();
   return query ? `/shop?${query}` : "/shop";
-}
-
-function matchesQuery(product: Product, needle: string): boolean {
-  return (
-    product.name.toLowerCase().includes(needle) ||
-    product.description.toLowerCase().includes(needle) ||
-    CATEGORY_NAMES[product.category].toLowerCase().includes(needle) ||
-    (product.shortDescription?.toLowerCase().includes(needle) ?? false)
-  );
-}
-
-/** Applies category, search and sort. Returns exactly what should be shown. */
-export function selectProducts(query: ShopQuery): Product[] {
-  let results = CATALOGUE;
-
-  if (query.category) {
-    results = results.filter((product) => product.category === query.category);
-  }
-
-  if (query.q) {
-    const needle = query.q.toLowerCase();
-    results = results.filter((product) => matchesQuery(product, needle));
-  }
-
-  const sorted = [...results];
-  if (query.sort === "price-asc") {
-    sorted.sort((a, b) => a.price - b.price);
-  } else if (query.sort === "price-desc") {
-    sorted.sort((a, b) => b.price - a.price);
-  } else {
-    sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-
-  return sorted;
 }
 
 export function filterLinkClass(isActive: boolean): string {

@@ -3,14 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
-import { SizeSelector } from "@/components/shop/size-selector";
+import { ProductPurchase } from "@/components/shop/product-purchase";
 import { EditorialImage } from "@/components/ui/editorial-image";
-import { CATALOGUE, CATEGORY_NAMES } from "@/lib/catalogue";
+import { getProductBySlug, getProductSlugs } from "@/lib/data/products";
 import { formatPrice } from "@/lib/format";
 import { productImageSrc } from "@/lib/images";
+import { getCategoryName } from "@/lib/types";
 
-export function generateStaticParams() {
-  return CATALOGUE.map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  const slugs = await getProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -19,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = CATALOGUE.find((item) => item.slug === slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return { title: "Product not found" };
@@ -41,7 +43,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = CATALOGUE.find((item) => item.slug === slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) notFound();
 
@@ -64,7 +66,7 @@ export default async function ProductPage({
               href={`/shop?category=${product.category}`}
               className={breadcrumbLinkClass}
             >
-              {CATEGORY_NAMES[product.category]}
+              {getCategoryName(product.category)}
             </Link>
           </li>
           <li aria-hidden="true">/</li>
@@ -77,7 +79,7 @@ export default async function ProductPage({
       <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
         <div>
           <EditorialImage
-            src={productImageSrc(product.slug)}
+            src={productImageSrc(product)}
             alt={product.name}
             ratioClass="aspect-4/5"
             sizes="(min-width: 1024px) 48vw, 100vw"
@@ -88,7 +90,7 @@ export default async function ProductPage({
 
         <div>
           <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted">
-            {CATEGORY_NAMES[product.category]}
+            {getCategoryName(product.category)}
           </p>
 
           <h1 className="mt-3 font-display text-4xl sm:text-5xl">
@@ -101,11 +103,12 @@ export default async function ProductPage({
 
           <p className="mt-6 max-w-md text-muted">{product.description}</p>
 
-          {product.sizes ? (
-            <div className="mt-10">
-              <SizeSelector name={`size-${product.slug}`} sizes={product.sizes} />
-            </div>
-          ) : null}
+          <ProductPurchase
+            productId={product.slug}
+            productName={product.name}
+            stock={product.stock}
+            sizes={product.sizes}
+          />
 
           {/* Quantity and Add to Cart arrive with cart state in Stage 4. */}
         </div>

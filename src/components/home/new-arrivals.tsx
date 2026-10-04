@@ -1,9 +1,11 @@
 import { Container } from "@/components/layout/container";
 import { ProductCard } from "@/components/shop/product-card";
 import { Reveal } from "@/components/ui/reveal";
-import { newArrivals } from "@/lib/catalogue";
+import { getNewArrivals } from "@/lib/data/products";
 
-export function NewArrivals() {
+export async function NewArrivals() {
+  const products = await getNewArrivals();
+
   return (
     <section className="border-b border-line py-20 sm:py-24">
       <Container>
@@ -14,8 +16,8 @@ export function NewArrivals() {
         </Reveal>
 
         <ul className="mt-10 grid grid-cols-2 gap-x-5 gap-y-12 sm:gap-x-8 lg:grid-cols-4">
-          {newArrivals.map((product) => (
-            <li key={product.slug}>
+          {products.map((product) => (
+            <li key={product.id}>
               <Reveal>
                 <ProductCard product={product} />
               </Reveal>

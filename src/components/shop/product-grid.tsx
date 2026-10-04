@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { ProductCard } from "@/components/shop/product-card";
-import type { Product } from "@/lib/catalogue";
+import type { Product } from "@/lib/types";
 
 /**
  * Product grid, or a designed empty state when nothing matches.

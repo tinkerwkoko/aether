@@ -100,5 +100,30 @@ Two small changes: the `## Terminal rule` heading makes the rule easy to find, a
 - Use arbitrary values in square brackets only when no canonical class exists (for example, a one-off brand colour or a specific grid template).
 - Before finishing any task, make sure the editor Problems panel shows no Tailwind suggestCanonicalClasses warnings in files you changed.
 - Use the colour and font tokens defined in globals.css; do not hard-code hex values in components.
+## Cart
+## Supabase
+- Public catalogue reads use the cookie-less client (`src/lib/supabase/public.ts`): no session is persisted, so shop and product pages stay statically renderable.
+- Private data uses the server client (`src/lib/supabase/server.ts`) or the browser client (`src/lib/supabase/client.ts`). All reads go through `src/lib/data/`, never straight from a page.
+- `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be prefixed with `NEXT_PUBLIC_`. Stage 7 adds the service-role client with `import "server-only"`.
+- RLS stays enabled on every table and is never disabled. Clients may never write orders, order items, products or categories.
+- Money is integer naira everywhere. `order_items.price` is a purchase-time snapshot.
+- A missing environment variable throws an error naming the variable only, never its value.
+- Database errors are logged on the server and surfaced to pages as plain language.
+
+## No invention
+- Cart lines store only `productId`, `quantity` and `size` (clothing only). Prices, names and images are always read from the catalogue at render time, never from stored cart data.
+- Prices are never trusted from the browser. Cart totals are presentation only; the server recalculates every total in Stage 7.
+- Quantity is a whole number from 1 up to the product's stock. Zero, negative and fractional quantities are rejected, and an invalid quantity removes the line.
+- Guests can add to cart. Sign-in is required only at checkout and for Save.
+- The cart lives in one `CartProvider` plus a `localStorage`-backed store read through `useSyncExternalStore` with an empty server snapshot. No state library.
+
+## Product card actions
+- Every product card has two icon actions over the image: Add to cart (lucide ShoppingCart) and Save (lucide Bookmark). Use icons only, 44px tap targets, each with an accessible name that includes the product name (for example "Add Desk Lamp to cart", "Save Desk Lamp").
+- Hover is never the only way to reach them. On desktop they fade in on card hover and on keyboard focus within the card. On touch devices and screens without hover they are always visible. Use a media query for hover capability, not screen width alone.
+- Add to cart works for guests. No sign-in is required to add to cart; sign-in happens at checkout.
+- Save requires an account. If a signed-out user taps Save, open a small accessible dialog that says saving needs an account and offers "Continue with Google" and "Not now", then return them to the same page and complete the save after sign-in. Never fake a saved state for signed-out users.
+- Saved items are stored in a real Supabase table, saved_items (id, user_id, product_id, created_at), with a unique pair on (user_id, product_id), foreign keys, and RLS so users can only read, insert and delete their own rows. Saved items are listed on a simple Saved page in the account area.
+- The "View product" text link beside the price (Stage 3) stays.
+- Do not render any action that is not backed by real working functionality in the current stage.
 
 Also check that the report template above `### Important implementation decisions` is complete. It should have the sections from the master prompt (What was implemented, Files created/changed, Verification, UX / Design notes). Since you're running the checks, tell Cline to write "checks run by user" in the Verification section instead of PASS/FAIL, so it doesn't claim results it never saw.

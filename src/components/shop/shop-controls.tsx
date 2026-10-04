@@ -1,19 +1,23 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 
-import { CATEGORIES } from "@/lib/catalogue";
-import { SORT_OPTIONS, filterLinkClass, shopHref } from "@/lib/shop-query";
+import type { Category } from "@/lib/data/products";
+import { filterLinkClass, shopHref, SORT_VALUES } from "@/lib/shop-query";
 import type { ShopQuery } from "@/lib/shop-query";
+import { SORT_LABELS } from "@/lib/types";
 
 /**
  * Search, category filter and sort for the shop.
  * Everything is a real link or a real GET form, so it works without JavaScript.
+ * Categories come from the database, so the filter can never drift from it.
  */
 export function ShopControls({
   query,
+  categories,
   resultCount,
 }: {
   query: ShopQuery;
+  categories: Category[];
   resultCount: number;
 }) {
   return (
@@ -68,8 +72,8 @@ export function ShopControls({
               All
             </Link>
           </li>
-          {CATEGORIES.map((category) => (
-            <li key={category.slug}>
+          {categories.map((category) => (
+            <li key={category.id}>
               <Link
                 href={shopHref(query, { category: category.slug })}
                 aria-current={query.category === category.slug ? "page" : undefined}
@@ -89,16 +93,16 @@ export function ShopControls({
 
         <nav aria-label="Sort products">
           <ul className="flex flex-wrap gap-x-6">
-            {SORT_OPTIONS.map((option) => {
-              const isActive = query.sort === option.value;
+            {SORT_VALUES.map((option) => {
+              const isActive = query.sort === option;
               return (
-                <li key={option.value}>
+                <li key={option}>
                   <Link
-                    href={shopHref(query, { sort: option.value })}
+                    href={shopHref(query, { sort: option })}
                     aria-current={isActive ? "true" : undefined}
                     className={filterLinkClass(isActive)}
                   >
-                    {option.label}
+                    {SORT_LABELS[option]}
                   </Link>
                 </li>
               );

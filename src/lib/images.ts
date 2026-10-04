@@ -1,25 +1,20 @@
 /**
- * Centralised image sources.
+ * The one place an image is resolved.
  *
- * No product or lifestyle photography exists yet, so every map below is empty and
- * components fall back to a labelled warm-stone placeholder. To switch to real
- * photography: drop files into `public/images/...` and add an entry here, e.g.
- *   "essential-t-shirt": "/images/products/essential-t-shirt.jpg",
- * No component needs to change.
+ * `image_url` holds a path under public/images (e.g. "/images/products/desk-lamp.jpg")
+ * or is null. When it is null, callers get null back and render the labelled
+ * placeholder, so a missing photo is never shown as if it were real.
  */
-
-const productImages: Record<string, string> = {};
-
-const categoryImages: Record<string, string> = {};
 
 const heroImage = "";
 
-export function productImageSrc(slug: string): string | null {
-  return productImages[slug] ?? null;
+export function productImageSrc(product: { image: string | null }): string | null {
+  return product.image;
 }
 
-export function categoryImageSrc(slug: string): string | null {
-  return categoryImages[slug] ?? null;
+export function categoryImageSrc(): string | null {
+  // Category photography is not stored in the database yet.
+  return null;
 }
 
 export function heroImageSrc(): string | null {

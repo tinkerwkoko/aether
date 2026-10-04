@@ -1,5 +1,6 @@
 "use client";
 
+import { useCart } from "@/components/cart/cart-provider";
 import {
   ChevronDown,
   Menu,
@@ -30,17 +31,18 @@ const iconSize = { size: 22, strokeWidth: 1.5 } as const;
  * Cart link. The count badge only appears when there is something in the cart.
  * The count is a static 0 until cart state lands in Stage 4.
  */
-function CartLink({ count }: { count: number }) {
+function CartLink() {
+  const { itemCount } = useCart();
   const label =
-    count > 0 ? `Cart, ${count} ${count === 1 ? "item" : "items"}` : "Cart";
+    itemCount > 0 ? `Cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}` : "Cart";
 
   return (
     <Link href="/cart" aria-label={label} className={iconButtonClass}>
       <span className="relative inline-flex">
         <ShoppingCart {...iconSize} aria-hidden />
-        {count > 0 ? (
+        {itemCount > 0 ? (
           <span className="absolute -top-1 -right-1.5 min-w-4.5 rounded-full bg-charcoal px-1 text-center text-[10px] leading-4.5 text-ivory">
-            {count > 9 ? "9+" : count}
+            {itemCount > 9 ? "9+" : itemCount}
           </span>
         ) : null}
       </span>
@@ -55,9 +57,6 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [renderedPathname, setRenderedPathname] = useState(pathname);
-
-  // Static until cart state is implemented in Stage 4.
-  const cartCount = 0;
 
   // Stable identity so the drawer effect only re-runs when it opens or closes.
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -177,7 +176,7 @@ export function SiteHeader() {
             <Link href="/shop#search" aria-label="Search" className={iconButtonClass}>
               <Search {...iconSize} aria-hidden />
             </Link>
-            <CartLink count={cartCount} />
+            <CartLink />
             <button
               ref={menuButtonRef}
               type="button"
