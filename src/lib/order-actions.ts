@@ -16,6 +16,8 @@ import { deliverySchema } from '@/lib/checkout-schema';
 import type { DeliveryErrors } from '@/lib/checkout-schema';
 import { getProductsByIds } from '@/lib/data/products';
 import { DELIVERY_FEE } from '@/lib/delivery';
+import { sendOrderConfirmation } from '@/lib/email/send-order-confirmation';
+import { formatOrderNumber } from '@/lib/format';
 import { createAdminSupabaseClient } from '@/lib/supabase/admin';
 
 export type PlaceOrderItem = {
@@ -294,17 +296,32 @@ export async function placeOrder(
       return GENERIC_FAILURE;
     }
 
-    // Stock moved, so cached catalogue reads must be refreshed.
-    revalidatePath('/shop');
-    revalidatePath('/account');
-
     // already_existed means a double-click or retry reused the same key, so the
     // original order comes back. That is the duplicate protection working.
+    const orderId = row.order_id;
+
+    // The order is committed. Email is attempted afterwards, in its own
+    // try/catch, and can never change the result returned below. When the order
+    // already existed the send still runs: it returns early if the earlier
+    // attempt succeeded, and retries if it did not.
+    try {
+      await sendOrderConfirmation(orderId, user.email ?? "");
+    } catch (emailError) {
+      console.error("[aether] confirmation email error (ignored):", emailError);
+    }
+
+    // Stock moved, so cached catalogue reads must be refreshed.
+    revalidatePath("/shop");
+    revalidatePath("/account");
+
     return {
       ok: true,
-      orderId: row.order_id,
-      orderNumber: `AE-${String(row.order_number ?? 0).padStart(6, '0')}`,
-      total: typeof row.total === 'number' ? row.total : serverTotal,
+      orderId,
+      orderNumber:
+        typeof row.order_number === "number"
+          ? formatOrderNumber(row.order_number)
+          : `AE-${String(row.order_number ?? 0).padStart(6, "0")}`,
+      total: typeof row.total === "number" ? row.total : serverTotal,
     };
   } catch (error) {
     console.error('[aether] create_order threw:', error);

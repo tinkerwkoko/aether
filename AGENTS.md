@@ -95,6 +95,14 @@ Do not run tsc, lint, build, dev servers or other long-running commands. After f
 ````
 
 Two small changes: the `## Terminal rule` heading makes the rule easy to find, and there's a blank line separating it from the template above.
+## Email
+- Email is sent only after the order is committed. A confirmation is attempted after `create_order` succeeds, never before, and never inside the transaction.
+- Email failure never changes the order. The customer still sees a confirmed order, and the result returned to the browser is the same success either way.
+- The outcome is recorded separately in the `confirmation_email_*` columns on `orders`. A null status means no attempt has been recorded yet. No client write policy touches these columns.
+- All dynamic values are HTML-escaped before they reach the email markup. Names, addresses and product names are never interpolated raw.
+- Secrets are never logged. Only the provider's error name and message are logged, never the API key, the recipient or the message body.
+- Never claim an email was sent unless the provider accepted it. The UI reads the recorded status and says otherwise when it is not 'sent'.
+
 ## Tailwind rules
 - This project uses Tailwind CSS v4. Prefer canonical utility classes over arbitrary values: use `z-70`, not `z-[70]`; `min-w-4.5`, not `min-w-[18px]`; `h-1.25`, not `h-[5px]`. One spacing unit equals 4px, so divide pixel values by 4.
 - Use arbitrary values in square brackets only when no canonical class exists (for example, a one-off brand colour or a specific grid template).
@@ -104,7 +112,7 @@ Two small changes: the `## Terminal rule` heading makes the rule easy to find, a
 - Orders are created only by the `create_order` function in Supabase, and only through the `placeOrder` server action. Nothing else writes orders or order items.
 - Totals and prices come from the database. `products.price` is read server-side and snapshotted into `order_items.price`. A total or price from the browser is never trusted.
 - The idempotency key stops duplicates: it is generated once per checkout attempt, kept in sessionStorage, reused on retries, and enforced by a unique constraint on `orders (user_id, idempotency_key)`.
-- The admin (service-role) client is server-only, guarded by `import "server-only"`, and used for nothing except calling `create_order`. Order reads use the normal server client so RLS enforces ownership.
+- The admin (service-role) client is server-only, guarded by `import "server-only"`, and used for exactly three things: calling `create_order`, reading an order to build its confirmation email, and updating the `confirmation_email_*` columns. Order reads for customers use the normal server client so RLS enforces ownership.
 - Email arrives in Stage 8. Email must never decide whether an order succeeds, and the confirmation page must not claim an email was sent until that stage proves it.
 
 ## Auth

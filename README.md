@@ -131,6 +131,23 @@ Duplicate protection uses an idempotency key generated once per checkout attempt
 
 The service-role client (`src/lib/supabase/admin.ts`) is guarded by `import "server-only"` and used for nothing except calling `create_order`. Order *reads* use the normal server client so RLS enforces ownership. No payment fields are collected, and no delivery time is promised anywhere.
 
+## Confirmation email
+
+An order is successful **the moment `create_order` commits**. Email is attempted only afterwards, and can never change that outcome.
+
+- `src/lib/email/client.ts` wraps the Resend client. A missing key returns a "not configured" result rather than throwing into the order flow, and logs the variable **name** only.
+- `src/lib/email/order-confirmation.ts` builds the message: subject `Your Aether order AE-000123`, a typographic AETHER wordmark, palette colours only, table-based inline-styled HTML with a plain-text alternative, no images or web fonts. Every dynamic value goes through `escapeHtml` first. It mentions no payment, delivery date or tracking, because the app does none of those.
+- `src/lib/email/send-order-confirmation.ts` loads the order with the admin client, returns early when the status is already `sent`, sends with the idempotency key `order-confirmation-<orderId>` under an 8-second timeout, and records `sent` or `failed`. A failure to record never throws.
+- `placeOrder` awaits the send inside its own `try/catch` after a successful commit, so the result returned to the browser is identical whether or not email succeeded.
+- The confirmation and order pages read `confirmation_email_status` through the normal server client and only claim an email was sent when it is `sent`; otherwise they say the order is confirmed and point to the account. `/account/orders/[orderId]` offers "Send confirmation email again", capped at three attempts per order.
+
+| Variable | Purpose |
+| --- | --- |
+| `RESEND_API_KEY` | Server only. Resend API key. Never prefixed `NEXT_PUBLIC_` |
+| `RESEND_FROM_EMAIL` | Server only. Must be an address Resend allows for this account |
+
+Until a sender domain is verified in Resend, only the account owner's email address can receive test emails.
+
 ## Security summary
 
 - RLS is enabled on private tables. Users can read and update only their own profile, and can read only their own orders and order items.
